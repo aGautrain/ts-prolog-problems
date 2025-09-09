@@ -25,3 +25,9 @@ deno test exercises/P01_last_test.ts
 # Run all tests
 deno test
 ```
+
+## Bonus
+
+Complexity chart for visualizing big O notation complexities
+
+![Time Complexity Growth Comparison](complexity_chart.png)

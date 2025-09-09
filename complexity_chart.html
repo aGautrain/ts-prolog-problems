@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time Complexity Growth Comparison</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        text-align: center;
+        color: #333;
+        margin-bottom: 10px;
+        font-size: 2.5em;
+      }
+      .subtitle {
+        text-align: center;
+        color: #666;
+        margin-bottom: 30px;
+        font-size: 1.2em;
+      }
+      .chart-container {
+        position: relative;
+        height: 600px;
+        margin: 30px 0;
+      }
+      .info-panel {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin: 20px 0;
+      }
+      .complexity-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .complexity-card {
+        background: white;
+        border-radius: 8px;
+        padding: 15px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        border-left: 4px solid;
+      }
+      .complexity-card.constant {
+        border-left-color: #28a745;
+      }
+      .complexity-card.logarithmic {
+        border-left-color: #17a2b8;
+      }
+      .complexity-card.linear {
+        border-left-color: #007bff;
+      }
+      .complexity-card.nlogn {
+        border-left-color: #ffc107;
+      }
+      .complexity-card.quadratic {
+        border-left-color: #fd7e14;
+      }
+      .complexity-card.exponential {
+        border-left-color: #dc3545;
+      }
+      .complexity-card.sqrt {
+        border-left-color: #6f42c1;
+      }
+      .complexity-card.sqrtlogn {
+        border-left-color: #20c997;
+      }
+
+      .complexity-name {
+        font-weight: bold;
+        font-size: 1.1em;
+        margin-bottom: 5px;
+      }
+      .complexity-notation {
+        font-family: "Courier New", monospace;
+        color: #666;
+        margin-bottom: 8px;
+      }
+      .complexity-description {
+        font-size: 0.9em;
+        color: #555;
+      }
+      .controls {
+        text-align: center;
+        margin: 20px 0;
+      }
+      .slider-container {
+        display: inline-block;
+        margin: 0 20px;
+      }
+      .slider-container label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+      }
+      .slider {
+        width: 200px;
+      }
+      .highlight {
+        background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Time Complexity Growth Comparison</h1>
+      <p class="subtitle">
+        Visualizing how different algorithms scale with input size
+      </p>
+
+      <div class="controls">
+        <div class="slider-container">
+          <label for="maxN">Maximum Input Size (n):</label>
+          <input
+            type="range"
+            id="maxN"
+            class="slider"
+            min="10"
+            max="1000"
+            value="100"
+            oninput="updateChart()"
+          />
+          <span id="maxNValue">100</span>
+        </div>
+        <div class="slider-container">
+          <label for="logScale">Log Scale:</label>
+          <input type="checkbox" id="logScale" onchange="updateChart()" />
+        </div>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="complexityChart"></canvas>
+      </div>
+
+      <div class="complexity-grid">
+        <div class="complexity-card constant">
+          <div class="complexity-name">Constant</div>
+          <div class="complexity-notation">O(1)</div>
+          <div class="complexity-description">
+            Best case. Time doesn't depend on input size. Example: Array access.
+          </div>
+        </div>
+        <div class="complexity-card logarithmic">
+          <div class="complexity-name">Logarithmic</div>
+          <div class="complexity-notation">O(log n)</div>
+          <div class="complexity-description">
+            Excellent. Grows very slowly. Example: Binary search.
+          </div>
+        </div>
+        <div class="complexity-card sqrt">
+          <div class="complexity-name">Square Root</div>
+          <div class="complexity-notation">O(√n)</div>
+          <div class="complexity-description">
+            Very good. Grows slower than linear. Example: Optimized prime
+            checking.
+          </div>
+        </div>
+        <div class="complexity-card sqrtlogn">
+          <div class="complexity-name">Square Root Log</div>
+          <div class="complexity-notation">O(√n log n)</div>
+          <div class="complexity-description">
+            Excellent. Better than O(n log n). Example: Optimized algorithms.
+          </div>
+        </div>
+        <div class="complexity-card linear">
+          <div class="complexity-name">Linear</div>
+          <div class="complexity-notation">O(n)</div>
+          <div class="complexity-description">
+            Good. Grows proportionally with input. Example: Simple iteration.
+          </div>
+        </div>
+        <div class="complexity-card nlogn">
+          <div class="complexity-name">Linearithmic</div>
+          <div class="complexity-notation">O(n log n)</div>
+          <div class="complexity-description">
+            Good. Near-linear growth. Example: Merge sort.
+          </div>
+        </div>
+        <div class="complexity-card quadratic">
+          <div class="complexity-name">Quadratic</div>
+          <div class="complexity-notation">O(n²)</div>
+          <div class="complexity-description">
+            Poor for large inputs. Example: Bubble sort, naive prime checking.
+          </div>
+        </div>
+        <div class="complexity-card exponential">
+          <div class="complexity-name">Exponential</div>
+          <div class="complexity-notation">O(2ⁿ)</div>
+          <div class="complexity-description">
+            Very poor. Only practical for very small inputs. Example: Brute
+            force.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let chart;
+
+      function generateData(maxN) {
+        const n = [];
+        const constant = [];
+        const logarithmic = [];
+        const linear = [];
+        const nlogn = [];
+        const quadratic = [];
+        const exponential = [];
+        const sqrt = [];
+        const sqrtlogn = [];
+
+        for (let i = 1; i <= maxN; i++) {
+          n.push(i);
+          constant.push(1);
+          logarithmic.push(Math.log2(i));
+          linear.push(i);
+          nlogn.push(i * Math.log2(i));
+          quadratic.push(i * i);
+          exponential.push(Math.pow(2, i));
+          sqrt.push(Math.sqrt(i));
+          sqrtlogn.push(Math.sqrt(i) * Math.log2(i));
+        }
+
+        return {
+          n,
+          constant,
+          logarithmic,
+          linear,
+          nlogn,
+          quadratic,
+          exponential,
+          sqrt,
+          sqrtlogn,
+        };
+      }
+
+      function updateChart() {
+        const maxN = parseInt(document.getElementById("maxN").value);
+        const logScale = document.getElementById("logScale").checked;
+        document.getElementById("maxNValue").textContent = maxN;
+
+        const data = generateData(maxN);
+
+        const config = {
+          type: "line",
+          data: {
+            labels: data.n,
+            datasets: [
+              {
+                label: "O(1) - Constant",
+                data: data.constant,
+                borderColor: "#28a745",
+                backgroundColor: "rgba(40, 167, 69, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(log n) - Logarithmic",
+                data: data.logarithmic,
+                borderColor: "#17a2b8",
+                backgroundColor: "rgba(23, 162, 184, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(√n) - Square Root",
+                data: data.sqrt,
+                borderColor: "#6f42c1",
+                backgroundColor: "rgba(111, 66, 193, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(√n log n) - Square Root Log",
+                data: data.sqrtlogn,
+                borderColor: "#20c997",
+                backgroundColor: "rgba(32, 201, 151, 0.1)",
+                borderWidth: 4,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(n) - Linear",
+                data: data.linear,
+                borderColor: "#007bff",
+                backgroundColor: "rgba(0, 123, 255, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(n log n) - Linearithmic",
+                data: data.nlogn,
+                borderColor: "#ffc107",
+                backgroundColor: "rgba(255, 193, 7, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(n²) - Quadratic",
+                data: data.quadratic,
+                borderColor: "#fd7e14",
+                backgroundColor: "rgba(253, 126, 20, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+              {
+                label: "O(2ⁿ) - Exponential",
+                data: data.exponential,
+                borderColor: "#dc3545",
+                backgroundColor: "rgba(220, 53, 69, 0.1)",
+                borderWidth: 3,
+                pointRadius: 0,
+                tension: 0.1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              x: {
+                title: {
+                  display: true,
+                  text: "Input Size (n)",
+                  font: { size: 14, weight: "bold" },
+                },
+                grid: {
+                  color: "rgba(0,0,0,0.1)",
+                },
+              },
+              y: {
+                type: logScale ? "logarithmic" : "linear",
+                title: {
+                  display: true,
+                  text: logScale ? "Operations (log scale)" : "Operations",
+                  font: { size: 14, weight: "bold" },
+                },
+                grid: {
+                  color: "rgba(0,0,0,0.1)",
+                },
+              },
+            },
+            plugins: {
+              title: {
+                display: true,
+                text: "Time Complexity Growth Comparison",
+                font: { size: 18, weight: "bold" },
+              },
+              legend: {
+                position: "top",
+                labels: {
+                  usePointStyle: true,
+                  padding: 20,
+                  font: { size: 12 },
+                },
+              },
+              tooltip: {
+                mode: "index",
+                intersect: false,
+                callbacks: {
+                  title: function (context) {
+                    return "Input Size: " + context[0].label;
+                  },
+                  label: function (context) {
+                    const value = context.parsed.y;
+                    return context.dataset.label + ": " + value.toFixed(2);
+                  },
+                },
+              },
+            },
+            interaction: {
+              mode: "nearest",
+              axis: "x",
+              intersect: false,
+            },
+          },
+        };
+
+        if (chart) {
+          chart.destroy();
+        }
+
+        const ctx = document.getElementById("complexityChart").getContext("2d");
+        chart = new Chart(ctx, config);
+      }
+
+      // Initialize chart
+      updateChart();
+    </script>
+  </body>
+</html>
